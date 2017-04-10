@@ -19,11 +19,11 @@ public:
     static const int TI_MAX = TI_SHOW_FPS;
     union Toggles {
         struct {
-        BOOL m_pause;
-        BOOL m_maximizeGames;
-        BOOL m_hideSteamVrNotifcation;
+            BOOL m_pause;
+            BOOL m_maximizeGames;
+            BOOL m_hideSteamVrNotifcation;
             BOOL m_showFPS;
-    };
+        };
         BOOL m_values[TI_MAX+1];
     };
     

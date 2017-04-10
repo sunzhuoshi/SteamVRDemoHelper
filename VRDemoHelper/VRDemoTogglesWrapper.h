@@ -13,11 +13,11 @@ public:
     inline void toggleValue(INT toggleIndex) {
         if (VRDemoArbiter::TI_MIN <= toggleIndex && VRDemoArbiter::TI_MAX >= toggleIndex) {
             m_toggles.m_values[toggleIndex] = !m_toggles.m_values[toggleIndex];
-        VRDemoEventDispatcher::getInstance().dispatchEvent(
+            VRDemoEventDispatcher::getInstance().dispatchEvent(
                 VRDemoEventDispatcher::EV_TOGGLE_VALUE_CHANGED,
                 toggleIndex,
                 m_toggles.m_values[toggleIndex]
-        );
+            );
         }
     }
     inline void togglePause() {
@@ -36,8 +36,15 @@ public:
     inline void toggleShowFPS() {
         toggleValue(VRDemoArbiter::TI_SHOW_FPS);
     }
+    inline void toggleShowFPS() {
+        m_toggles.m_showFPS = !m_toggles.m_showFPS;
+        VRDemoEventDispatcher::getInstance().dispatchEvent(
+            VRDemoEventDispatcher::EV_SHOW_FPS_CHANGED,
+            m_toggles.m_showFPS
+        );
+    }
     VRDemoTogglesWrapper() :
-        m_toggles({ FALSE, TRUE, TRUE, FALSE }) {
+        m_toggles({ FALSE, TRUE, TRUE, TRUE }) {
     }
     const VRDemoArbiter::Toggles& getToggles() {
         return m_toggles;

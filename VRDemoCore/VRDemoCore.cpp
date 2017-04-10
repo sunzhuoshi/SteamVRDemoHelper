@@ -112,3 +112,8 @@ VRDEMOCORE_API VOID WINAPI fnSetToggleValue(INT nIndex, BOOL nValue)
     }
 }
 
+VRDEMOCORE_API VOID WINAPI fnSetShowFPS(BOOL nShowFPS)
+{
+    toggles.m_showFPS = nShowFPS;
+}
+

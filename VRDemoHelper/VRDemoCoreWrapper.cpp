@@ -84,6 +84,9 @@ void VRDemoCoreWrapper::handleEvent(int event, unsigned long long param1, unsign
     case VRDemoEventDispatcher::EV_TOGGLE_VALUE_CHANGED:
         m_setToggleValueFunc(static_cast<int>(param1), value);
         break;
+    case VRDemoEventDispatcher::EV_SHOW_FPS_CHANGED:
+        m_setShowFPSFunc(value);
+        break;
     default:
         break;
     }

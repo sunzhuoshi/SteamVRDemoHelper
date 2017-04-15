@@ -20,7 +20,7 @@ public:
         BOOL m_pause;
         BOOL m_maximizeGames;
         BOOL m_improveSteamVR;
-            BOOL m_showFPS;
+        BOOL m_showFPS;
     };
         BOOL m_values[TI_MAX+1];
     };

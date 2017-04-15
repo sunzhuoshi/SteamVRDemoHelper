@@ -37,7 +37,7 @@ VRDemoArbiter::TokenMap VRDemoArbiter::s_ruleActionTokenMap = {
 bool VRDemoArbiter::arbitrate(RuleType type, int message, HWND wnd)
 {
     bool result = false;
-
+  
     if (!m_toggles->m_pause) {
         char className[MAX_PATH];
         RuleAction action = RA_UNKNOWN;

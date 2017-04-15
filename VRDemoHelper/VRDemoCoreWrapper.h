@@ -12,6 +12,7 @@ public:
     void handleEvent(int event, unsigned long long param1, unsigned long long param2);
 private:
     typedef BOOL(*InitFuncPtr)(const CHAR *);
+
     typedef VOID(*SetToggleValueFuncPtr)(INT, BOOL);
 
     HINSTANCE m_dll;

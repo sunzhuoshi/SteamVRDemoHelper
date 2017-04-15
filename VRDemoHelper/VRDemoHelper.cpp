@@ -203,8 +203,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 togglesWrapper.togglePause();
             }
                 break;
-            case IDM_SHOW_FPS_OVERLAP:
-                MessageBoxA(hWnd, "Coming soon...", "Info", MB_OK);
+            case IDM_SHOW_FPS:
+                togglesWrapper.toggleShowFPS();
                 break;
             case IDM_MAXIMIZE_GAMES:
                 togglesWrapper.toggleMaximizeGames();
@@ -297,6 +297,7 @@ VOID ShowContextMenu(HWND hwnd, POINT pt)
 			}
             CheckMenuItem(hSubMenu, IDM_PAUSE, MF_BYCOMMAND | (togglesWrapper.getPause() ? MF_CHECKED : MF_UNCHECKED));
             CheckMenuItem(hSubMenu, IDM_MAXIMIZE_GAMES, MF_BYCOMMAND | (togglesWrapper.getMaximmizeGames() ? MF_CHECKED : MF_UNCHECKED));
+            CheckMenuItem(hSubMenu, IDM_SHOW_FPS, MF_BYCOMMAND | (togglesWrapper.getShowFPS() ? MF_CHECKED : MF_UNCHECKED));
 
             bool steamVRConfiguratorActive = VRDemoSteamVRConfigurator::getInstance().isActive();
             CheckMenuItem(hSubMenu, IDM_IMPROVE_STEAM_VR, MF_BYCOMMAND | (togglesWrapper.getImproveSteamVR() ? MF_CHECKED : MF_UNCHECKED));

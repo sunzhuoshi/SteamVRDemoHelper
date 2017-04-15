@@ -121,6 +121,9 @@
 copy /Y $(ProjectDir)..\Common\log4cplus\bin\log4cplusD_x64.dll $(TargetDir)
 copy /Y $(ProjectDir)..\Common\log4cplus\bin\log4cplusD_x64.pdb $(TargetDir)
 
+echo copying FW1FontWrapper dll...
+copy /Y $(ProjectDir)..\VRDemoCore\Libs\FW1FontWrapper\x64\FW1FontWrapper.dll
+
 echo copying settings...
 copy /Y $(ProjectDir)settings.ini $(TargetDir)</Command>
     </PostBuildEvent>
@@ -175,6 +178,9 @@ copy /Y $(ProjectDir)..\Common\log4cplus\bin\log4cplus_x64.dll $(TargetDir)
 
 echo copying settings...
 copy /Y $(ProjectDir)settings.ini $(TargetDir)
+
+echo copying FW1FontWrapper dll...
+copy /Y $(ProjectDir)..\VRDemoCore\Libs\FW1FontWrapper\x64\FW1FontWrapper.dll $(TargetDir)
 
 cd $(TargetDir)
 del /q *.exp 

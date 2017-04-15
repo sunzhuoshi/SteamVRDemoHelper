@@ -3,10 +3,6 @@
 #include <WinUser.h>
 #include "util\l4util.h"
 
-#define VR_DEMO_LOGGER_CLIENT "CLIENT"
-#define VR_DEMO_LOGGER_SERVER "SERVER"
-
-
 #define VR_DEMO_SUPPRESS_DOWHILE_WARNING()      \
     __pragma (warning (push))                   \
     __pragma (warning (disable:4127))

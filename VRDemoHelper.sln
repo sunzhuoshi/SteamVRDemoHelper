@@ -7,20 +7,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VRDemoHelper", "VRDemoHelpe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VRDemoCore", "VRDemoCore\VRDemoCore.vcxproj", "{B269B01A-27A9-4678-9184-BD65D6746B4A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{51C42803-F4F6-4B22-A1FB-8CDAA3F487E4}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Archive|x64 = Archive|x64
-		Archive|x86 = Archive|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Archive|x64.ActiveCfg = Archive|x64
-		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Archive|x64.Build.0 = Archive|x64
-		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Archive|x86.ActiveCfg = Archive|Win32
-		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Archive|x86.Build.0 = Archive|Win32
 		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Debug|x64.ActiveCfg = Debug|x64
 		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Debug|x64.Build.0 = Debug|x64
 		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Debug|x86.ActiveCfg = Debug|Win32
@@ -29,10 +28,6 @@ Global
 		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Release|x64.Build.0 = Release|x64
 		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Release|x86.ActiveCfg = Release|Win32
 		{ACC86A34-F36C-4ABD-B227-4B7C9C1BA1F6}.Release|x86.Build.0 = Release|Win32
-		{B269B01A-27A9-4678-9184-BD65D6746B4A}.Archive|x64.ActiveCfg = Archive|x64
-		{B269B01A-27A9-4678-9184-BD65D6746B4A}.Archive|x64.Build.0 = Archive|x64
-		{B269B01A-27A9-4678-9184-BD65D6746B4A}.Archive|x86.ActiveCfg = Archive|Win32
-		{B269B01A-27A9-4678-9184-BD65D6746B4A}.Archive|x86.Build.0 = Archive|Win32
 		{B269B01A-27A9-4678-9184-BD65D6746B4A}.Debug|x64.ActiveCfg = Debug|x64
 		{B269B01A-27A9-4678-9184-BD65D6746B4A}.Debug|x64.Build.0 = Debug|x64
 		{B269B01A-27A9-4678-9184-BD65D6746B4A}.Debug|x86.ActiveCfg = Debug|Win32

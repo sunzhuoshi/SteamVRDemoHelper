@@ -1,5 +1,4 @@
-﻿// VRDemoHelper.cpp : 定义应用程序的入口点。
-//
+﻿//
 
 // NOTE: DO NOT add anything except comments before "stdafx.h", it will be omitted without any warning...
 #include "stdafx.h"
@@ -19,45 +18,30 @@
 #include <log4cplus/socketappender.h>
 
 #include "util/l4util.h"
-#include "XGetopt.h"
 #include "argcargv.h"
 #include "VRDemoConfigurator.h"
-#include "VRDemoLogServer.h"
 #include "VRDemoWindowPoller.h"
 #include "VRDemoCoreWrapper.h"
 #include "VRDemoNotificationManager.h"
 #include "VRDemoHotKeyManager.h"
+#include "VRDemoSteamVRConfigurator.h"
 
 #define MAX_LOADSTRING 100
 #define LOG_PROPERTY_FILE "log4cplus.props"
 #define SINGLE_INSTANCE_MUTEX_NAME "L4VRDemoHelperSingleInstanceMetux"
+ 
+HINSTANCE hInst;                                
+CHAR szTitle[MAX_LOADSTRING];                
+CHAR szWindowClass[MAX_LOADSTRING];           
 
-// 全局变量: 
-HINSTANCE hInst;                                // 当前实例
-CHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
-CHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
-struct Options 								   // Parameters configured by command line arguments
-{
-	USHORT usPort;			// log server port
-	BOOL bTrace;			// only start log server when trace is on
-	Options():
-		usPort(8888),
-		bTrace(FALSE)
-	{
-	}
-} options;
-
-log4cplus::Logger clientLogger;
 VRDemoTogglesWrapper togglesWrapper;
 
-// 此代码模块中包含的函数的前向声明: 
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 VOID ShowContextMenu(HWND hwnd, POINT pt);
-BOOL ParseCommandLineArguments();
 BOOL IsAbleToRun();
 VOID InitLogConfiguration();
 
@@ -74,60 +58,44 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     InitLogConfiguration();
 
-	clientLogger = log4cplus::Logger::getInstance(VR_DEMO_LOGGER_CLIENT);
+    log4cplus::Logger logger = log4cplus::Logger::getRoot();
 
 	if (!IsAbleToRun())
 	{
 		return FALSE;
 	}
 
-	LOG4CPLUS_INFO(clientLogger, "VR Demo Helper is starting");
-
-	if (!ParseCommandLineArguments())
-	{
-		return FALSE;
-	}	
-
+	LOG4CPLUS_INFO(logger, "VR Demo Helper is starting");
+    
     if (!VRDemoConfigurator::getInstance().init(
-            l4util::getFileFullPath(VRDemoConfigurator::FILE_SETTINGS),
-            VR_DEMO_LOGGER_CLIENT
+            l4util::getFileFullPath(VRDemoConfigurator::FILE_SETTINGS)
         )
     ) {  
         VR_DEMO_ALERT_IS(IDS_CAPTION_ERROR, "Failed to init configurator,\ncheck the log for detail.");
         return FALSE;
     }
 
-
-	VRDemoLogServer::VRDemoLogServerPtr logServer;
-	if (options.bTrace) {
-		logServer = new VRDemoLogServer();
-		if (!logServer->start(options.usPort))
-		{
-			return FALSE;
-		}
-	}
+    if (!VRDemoSteamVRConfigurator::getInstance().init()) {
+        togglesWrapper.setConfigurateVRNotification(FALSE);
+        LOG4CPLUS_INFO(logger, "Failed to init SteamVR configurator, check if SteamVR is installed");
+    }
 
     VRDemoCoreWrapper::VRDemoCoreWrapperPtr coreWrapper(new VRDemoCoreWrapper());
-    if (!coreWrapper->init(0 != options.bTrace)) {
+    if (!coreWrapper->init()) {
         VR_DEMO_ALERT_IS(IDS_CAPTION_ERROR, "Failed to init core module,\ncheck the log for detail.");
         return FALSE;
     }
 
     VRDemoWindowPoller::VRDemoWindowPollerPtr poller(new VRDemoWindowPoller());
-    if (!poller->init(togglesWrapper.getToggles(), 0 != options.bTrace)) {
-        LOG4CPLUS_ERROR(clientLogger, "Failed to init window poller");
-        if (logServer && logServer->isRunning()) {
-            logServer->stop();
-        }
+    if (!poller->init(togglesWrapper.getToggles())) {
+        LOG4CPLUS_ERROR(logger, "Failed to init window poller");
         return FALSE;
     }
 
-    // 初始化全局字符串
     LoadStringA(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringA(hInstance, IDC_VRDEMOHELPER, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    // 执行应用程序初始化: 
     if (!InitInstance (hInstance, nCmdShow))
     {
         return FALSE;
@@ -137,9 +105,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    LOG4CPLUS_INFO(clientLogger, "VR Demo Helper started");
+    LOG4CPLUS_INFO(logger, "VR Demo Helper started");
 
-    // 主消息循环: 
     while (GetMessage(&msg, nullptr, 0, 0))
     {
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
@@ -152,20 +119,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // stop muse be called, or poller thread will access data freed
     poller->stop();
 
-	if (options.bTrace) {
-		logServer->stop();
-	}
-
-	LOG4CPLUS_INFO(clientLogger, "VR Demo Helper exited");
+	LOG4CPLUS_INFO(logger, "VR Demo Helper exited");
     return (int) msg.wParam;
 }
 
 
 
 //
-//  函数: MyRegisterClass()
-//
-//  目的: 注册窗口类。
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -189,14 +149,6 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 }
 
 //
-//   函数: InitInstance(HINSTANCE, int)
-//
-//   目的: 保存实例句柄并创建主窗口
-//
-//   注释: 
-//
-//        在此函数中，我们在全局变量中保存实例句柄并
-//        创建和显示主程序窗口。
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
@@ -220,14 +172,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-//
-//  函数: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  目的:    处理主窗口的消息。
-//
-//  WM_COMMAND  - 处理应用程序菜单
-//  WM_PAINT    - 绘制主窗口
-//  WM_DESTROY  - 发送退出消息并返回
+
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -264,8 +209,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_MAXIMIZE_GAMES:
                 togglesWrapper.toggleMaximizeGames();
                 break;
-            case IDM_HIDE_STEAM_VR_NOTIFICATION:
-                togglesWrapper.toggleHideSteamVrNotification();
+            case IDM_IMPROVE_STEAM_VR:
+                togglesWrapper.toggleImproveSteamVR();
                 break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
@@ -276,11 +221,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 在此处添加使用 hdc 的任何绘图代码...
             EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:
+        VRDemoSteamVRConfigurator::getInstance().restoreSettings();
         VRDemoNotificationManager::getInstance().deleteNotificationIcon();
         PostQuitMessage(0);
         break;
@@ -317,22 +262,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_INITDIALOG:
-		{
-		RECT dlgRect, desktopRect;
-
-        // set dialog position to the center of client
-		if (GetWindowRect(hDlg, &dlgRect) && GetWindowRect(GetDesktopWindow(), &desktopRect))
-		{
-			SetWindowPos(hDlg,
-				NULL,
-				(desktopRect.right - desktopRect.left - dlgRect.right + dlgRect.left) / 2,
-				(desktopRect.bottom - desktopRect.top - dlgRect.bottom + dlgRect.top) / 2,
-				0,
-				0,
-				SWP_NOSIZE);
-		}
-		return (INT_PTR)TRUE;
-		}
+        break;
     case WM_COMMAND:
         if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
         {
@@ -367,51 +297,23 @@ VOID ShowContextMenu(HWND hwnd, POINT pt)
 			}
             CheckMenuItem(hSubMenu, IDM_PAUSE, MF_BYCOMMAND | (togglesWrapper.getPause() ? MF_CHECKED : MF_UNCHECKED));
             CheckMenuItem(hSubMenu, IDM_MAXIMIZE_GAMES, MF_BYCOMMAND | (togglesWrapper.getMaximmizeGames() ? MF_CHECKED : MF_UNCHECKED));
-            CheckMenuItem(hSubMenu, IDM_HIDE_STEAM_VR_NOTIFICATION, MF_BYCOMMAND | (togglesWrapper.getHideSteamVrNotification() ? MF_CHECKED : MF_UNCHECKED));
             CheckMenuItem(hSubMenu, IDM_SHOW_FPS, MF_BYCOMMAND | (togglesWrapper.getShowFPS() ? MF_CHECKED : MF_UNCHECKED));
+
+            bool steamVRConfiguratorActive = VRDemoSteamVRConfigurator::getInstance().isActive();
+            CheckMenuItem(hSubMenu, IDM_IMPROVE_STEAM_VR, MF_BYCOMMAND | (togglesWrapper.getImproveSteamVR() ? MF_CHECKED : MF_UNCHECKED));
+            EnableMenuItem(hSubMenu, IDM_IMPROVE_STEAM_VR, MF_BYCOMMAND | (steamVRConfiguratorActive? MF_ENABLED: MF_DISABLED));
+
             TrackPopupMenuEx(hSubMenu, uFlags, pt.x, pt.y, hwnd, NULL);
 		}
 		DestroyMenu(hMenu);
 	}
 }
 
-BOOL ParseCommandLineArguments()
-{
-	BOOL result = TRUE;
-	char *cmdLine = GetCommandLineA();
-
-	LOG4CPLUS_DEBUG(clientLogger, "command line: " << cmdLine);
-	char c;
-	while ((c = getopt(_ConvertCommandLineToArgcArgv(cmdLine), _ppszArgv, "tp:")) != EOF)
-	{
-		switch (c)
-		{
-		case 't':
-			LOG4CPLUS_DEBUG(clientLogger, "Option \"t\" found" << std::endl);
-			options.bTrace = TRUE;
-			break;
-		case 'p':
-			LOG4CPLUS_DEBUG(clientLogger, "Option \"p\" found: " << optarg << std::endl);
-			options.usPort = atoi(optarg);
-			break;
-		case '?':
-		default:
-			{
-			std::ostringstream msg;
-			msg << "Unknown arguments:\n" << cmdLine;
-			MessageBox(NULL, msg.str().c_str(), "Error", MB_OK);
-			result = FALSE;
-			break;
-			}
-		}
-	}
-	return result;
-}
-
 BOOL IsAbleToRun()
 {
 	BOOL bResult = FALSE;
 	std::ostringstream errorMsg;
+    log4cplus::Logger logger = log4cplus::Logger::getRoot();
 
 	HANDLE hMutex = CreateMutexA(NULL, TRUE, SINGLE_INSTANCE_MUTEX_NAME);
 	if (hMutex)
@@ -420,7 +322,7 @@ BOOL IsAbleToRun()
 		{
 			CloseHandle(hMutex);
 			errorMsg << l4util::loadString(IDC_VRDEMOHELPER) << " is already running";
-			LOG4CPLUS_ERROR(clientLogger, errorMsg.str());
+			LOG4CPLUS_ERROR(logger, errorMsg.str());
 			MessageBox(NULL, 
 				errorMsg.str().c_str(), 
 				l4util::loadString(IDS_CAPTION_ERROR).c_str(), 
@@ -436,7 +338,7 @@ BOOL IsAbleToRun()
 	else 
 	{
 		errorMsg << "Failed to create single instance lock, error code: " << GetLastError();
-		LOG4CPLUS_ERROR(clientLogger, errorMsg.str());;
+		LOG4CPLUS_ERROR(logger, errorMsg.str());;
 		MessageBox(NULL, 
 			errorMsg.str().c_str(), 
 			l4util::loadString(IDS_CAPTION_ERROR).c_str(), 
@@ -450,25 +352,13 @@ VOID InitLogConfiguration()
 {
     std::ostringstream defaultProps;
 
-    defaultProps << "log4cplus.rootLogger = DEBUG" << std::endl;
-    defaultProps << "log4cplus.logger.CLIENT = DEBUG, CLIENT" << std::endl;
-    defaultProps << "log4cplus.appender.CLIENT = log4cplus::RollingFileAppender" << std::endl;
-    defaultProps << "log4cplus.appender.CLIENT.MaxFileSize = 100MB" << std::endl;
-    defaultProps << "log4cplus.appender.CLIENT.MaxBackupIndex = 10" << std::endl;
-    defaultProps << "log4cplus.appender.CLIENT.File = helper.log" << std::endl;
-    defaultProps << "log4cplus.appender.CLIENT.layout = log4cplus::PatternLayout" << std::endl;
-    defaultProps << "log4cplus.appender.CLIENT.layout.ConversionPattern = [%-5p %d{%y-%m-%d %H:%M:%S}] %m%n%n" << std::endl;
-
-    // turn on server logger only in trace mode
-    if (options.bTrace) {
-        defaultProps << "log4cplus.logger.SERVER = DEBUG, SERVER" << std::endl;
-        defaultProps << "log4cplus.appender.SERVER = log4cplus::RollingFileAppender" << std::endl;
-        defaultProps << "log4cplus.appender.SERVER.MaxFileSize = 100MB" << std::endl;
-        defaultProps << "log4cplus.appender.SERVER.MaxBackupIndex = 10" << std::endl;
-        defaultProps << "log4cplus.appender.SERVER.File = helper.log" << std::endl;
-        defaultProps << "log4cplus.appender.SERVER.layout = log4cplus::PatternLayout" << std::endl;
-        defaultProps << "log4cplus.appender.SERVER.layout.ConversionPattern = [%-5p %d{%y-%m-%d %H:%M:%S}] %m%n%n" << std::endl;
-    }
+    defaultProps << "log4cplus.rootLogger = DEBUG, FILE" << std::endl;
+    defaultProps << "log4cplus.appender.FILE = log4cplus::RollingFileAppender" << std::endl;
+    defaultProps << "log4cplus.appender.FILE.MaxFileSize = 100MB" << std::endl;
+    defaultProps << "log4cplus.appender.FILE.MaxBackupIndex = 10" << std::endl;
+    defaultProps << "log4cplus.appender.FILE.File = helper.log" << std::endl;
+    defaultProps << "log4cplus.appender.FILE.layout = log4cplus::PatternLayout" << std::endl;
+    defaultProps << "log4cplus.appender.FILE.layout.ConversionPattern = [%-5p %d{%y-%m-%d %H:%M:%S}] %m%n%n" << std::endl;
 
     log4cplus::PropertyConfigurator defaultConfigutator(std::istringstream(defaultProps.str()));
     defaultConfigutator.configure();

@@ -13,7 +13,7 @@ public:
     typedef log4cplus::helpers::SharedObjectPtr<VRDemoWindowPoller> VRDemoWindowPollerPtr;
     VRDemoWindowPoller();
     ~VRDemoWindowPoller();
-    bool init(const VRDemoArbiter::Toggles& toggles, bool trace);
+    bool init(const VRDemoArbiter::Toggles& toggles);
     void run();
     void stop();
     static const int POLL_INTERVAL = 1000; // ms

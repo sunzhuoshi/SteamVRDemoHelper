@@ -13,9 +13,7 @@
 // Use a guid to uniquely identify our icon
 #ifdef _DEBUG
 class __declspec(uuid("BC719626-7CD0-4FF2-B9B4-6D821515C9E8")) HelperIcon;
-#elif defined(ARCHIVE) 
-class __declspec(uuid("BC719626-7CD0-4FF2-B9B4-6D821515C9E0")) HelperIcon;
-#elif
+#else
 class __declspec(uuid("BC719626-7CD0-4FF2-B9B4-6D821515C9E9")) HelperIcon;
 #endif 
 
@@ -109,4 +107,42 @@ void VRDemoNotificationManager::deleteNotifcationInfo()
     nid.hWnd = m_wnd;
     nid.uFlags = NIF_INFO;
     Shell_NotifyIcon(NIM_DELETE, &nid);
+}
+
+void VRDemoNotificationManager::refreshNotificationArea() {
+    HWND wnd = findNotificationBarWindow();
+    if (wnd) {
+        tagRECT rect;
+        GetClientRect(wnd, &rect);
+
+        for (LONG x = 0; x < rect.right; x += 5) {
+            for (LONG y = 0; y < rect.bottom; y += 5) {
+                PostMessage(
+                    wnd,
+                    WM_MOUSEMOVE,
+                    0,
+                    (y << 16) + x
+                );
+            }
+        }
+    }
+}
+
+HWND VRDemoNotificationManager::findNotificationBarWindow()
+{
+    HWND result = NULL;
+
+    // use spy++ to get window hierarchy of the notification tool bar
+    // NOTE: only tested on windows 8.1
+    HWND trayWnd = FindWindow("Shell_TrayWnd", "");
+    if (trayWnd) {
+        HWND notifyWnd = FindWindowEx(trayWnd, NULL, "TrayNotifyWnd", "");
+        if (notifyWnd) {
+            HWND sysPagerWnd = FindWindowEx(notifyWnd, NULL, "SysPager", "");
+            if (sysPagerWnd) {
+                result = FindWindowEx(sysPagerWnd, NULL, "ToolbarWindow32", NULL);
+            }
+        }
+    }
+    return result;
 }

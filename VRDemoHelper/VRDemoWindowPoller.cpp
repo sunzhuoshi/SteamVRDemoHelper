@@ -17,15 +17,11 @@ VRDemoWindowPoller::~VRDemoWindowPoller()
 {
 }
 
-bool VRDemoWindowPoller::init(const VRDemoArbiter::Toggles& toggles, bool trace)
+bool VRDemoWindowPoller::init(const VRDemoArbiter::Toggles& toggles)
 {
     bool result = false;
 
-    if (VRDemoArbiter::getInstance().init(
-        VR_DEMO_LOGGER_CLIENT,
-        toggles,
-        trace
-    )) {
+    if (VRDemoArbiter::getInstance().init(toggles)) {
         m_toggles = &toggles;
         m_initEvent.signal();
         result = true;

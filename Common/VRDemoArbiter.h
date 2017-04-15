@@ -4,15 +4,13 @@
 #include <map>
 #include <list>
 
-#include <log4cplus\log4cplus.h>
-
 class VRDemoArbiter
 {
 public:
     enum ToggleIndex {
         TI_PAUSE = 0,
         TI_MAXIMIZE_GAMES = 1,
-        TI_HIDE_STEAM_VR_NOTIFICATION = 2,
+        TI_IMPROVE_STEAM_VR = 2,
         TI_SHOW_FPS = 3
     };
     static const int TI_MIN = TI_PAUSE;
@@ -21,7 +19,7 @@ public:
         struct {
         BOOL m_pause;
         BOOL m_maximizeGames;
-        BOOL m_hideSteamVrNotifcation;
+        BOOL m_improveSteamVR;
         BOOL m_showFPS;
     };
         BOOL m_values[TI_MAX+1];
@@ -102,15 +100,14 @@ private:
     typedef std::map<std::string, RuleItem> RuleItemMap;
 public:
     VRDemoArbiter::VRDemoArbiter() :
-        m_toggles(nullptr),
-        m_trace(false) {
+        m_toggles(nullptr) {
     };
     VRDemoArbiter::~VRDemoArbiter() {};
     static VRDemoArbiter& VRDemoArbiter::getInstance() {
         static VRDemoArbiter instance;
         return instance;
     }
-    bool init(const std::string &loggerName, const Toggles &toggles, bool trace);
+    bool init(const Toggles &toggles);
     bool arbitrate(RuleType type, int message, HWND wnd);
     inline bool hasRuleWithTypePoll() const {
         return hasRuleWithType(RT_POLL);
@@ -120,14 +117,13 @@ public:
     }
     bool hasRuleWithType(RuleType ruleType) const;
     static const std::string SECTION_PREFIX_MAXIMIZE_GAMES;
-    static const std::string SECTION_PREFIX_HIDE_STEAM_VR_NOTIFICATION;
+    static const std::string SECTION_PREFIX_IMPROVE_STEAM_VR;
     static const std::string SECTION_PREFIX_ALL;
 private:
 	bool ifIgnore(const std::string &processName);
 
     void performAction(HWND wnd, const RuleItem &ruleItems);
 	void performFullScreenAction(HWND wnd, const RuleItem &ruleItem);
-    void performShowWindowAction(HWND wnd, const RuleItem &ruleItem);
 
     int parseValue(const std::string &token, const TokenMap &tokenMap);
 
@@ -138,9 +134,7 @@ private:
 
     NameList m_ignoredProcessNameList; // TODO: use set
     RuleItemMap m_ruleItemMap;
-    log4cplus::Logger m_logger;
 
     const Toggles *m_toggles;
-    bool m_trace;
 };
 

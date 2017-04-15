@@ -8,10 +8,11 @@ public:
     typedef log4cplus::helpers::SharedObjectPtr<VRDemoCoreWrapper> VRDemoCoreWrapperPtr;
     VRDemoCoreWrapper();
     ~VRDemoCoreWrapper();
-    bool init(BOOL trace);
+    bool init();
     void handleEvent(int event, unsigned long long param1, unsigned long long param2);
 private:
-    typedef BOOL(*InitFuncPtr)(const CHAR *, BOOL);
+    typedef BOOL(*InitFuncPtr)(const CHAR *);
+
     typedef VOID(*SetToggleValueFuncPtr)(INT, BOOL);
 
     HINSTANCE m_dll;

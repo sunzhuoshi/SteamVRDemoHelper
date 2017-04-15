@@ -34,10 +34,10 @@ VRDemoCoreWrapper::~VRDemoCoreWrapper()
     }
 }
 
-bool VRDemoCoreWrapper::init(BOOL trace)
+bool VRDemoCoreWrapper::init()
 {
     bool result = false;
-    log4cplus::Logger logger = log4cplus::Logger::getInstance(VR_DEMO_LOGGER_CLIENT);
+    log4cplus::Logger logger = log4cplus::Logger::getRoot();
 
     m_dll = LoadLibrary(l4util::getFileFullPath(FILE_HOOK_DLL).c_str());
     if (m_dll) {
@@ -46,7 +46,7 @@ bool VRDemoCoreWrapper::init(BOOL trace)
         SetToggleValueFuncPtr setToggleValueFunc = (SetToggleValueFuncPtr)GetProcAddress(m_dll, FUNCTION_SET_TOGGLE_VALUE.c_str());
 
         if (initFunc && hookProc && setToggleValueFunc) {
-            if (initFunc(l4util::getFileFullPath(FILE_SETTINGS).c_str(), trace)) {
+            if (initFunc(l4util::getFileFullPath(FILE_SETTINGS).c_str())) {
                 m_hook = SetWindowsHookEx(
                     WH_CBT,
                     hookProc,

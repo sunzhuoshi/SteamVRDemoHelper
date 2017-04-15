@@ -7,14 +7,12 @@
 
 const std::string VRDemoConfigurator::FILE_SETTINGS = "settings.ini";
 
-bool VRDemoConfigurator::init(const std::string& configFilePath, const std::string& loggerName)
+bool VRDemoConfigurator::init(const std::string& configFilePath)
 {
     bool result = false;
     char buf[1024];
     DWORD p = 0, ret = GetPrivateProfileSectionNamesA(buf, sizeof(buf), configFilePath.c_str());
-    m_logger = log4cplus::Logger::getInstance(loggerName);
 
-    LOG4CPLUS_DEBUG(m_logger, "Initializing VR Demo Configurator, file path: " << configFilePath);
     if (0 < ret) {
         std::ostringstream sectionName;
         while (p < ret) {
@@ -29,20 +27,34 @@ bool VRDemoConfigurator::init(const std::string& configFilePath, const std::stri
             p++;
         }
         m_configFilePath = configFilePath;
-        LOG4CPLUS_DEBUG(m_logger, "VR Demo Configurator inited");
         result = true;
     }
     return result;
 }
 
+const VRDemoConfigurator::SectionMap& VRDemoConfigurator::getSections() const
+{
+    assert(isInited());
+    return m_sectionMap;
+}
+
+bool VRDemoConfigurator::findSection(const std::string& sectionName, const VRDemoConfigurator::KeyValueMap **map) const
+{
+    assert(isInited());
+
+    auto it = m_sectionMap.find(sectionName);
+    if (it != m_sectionMap.end()) {
+        *map = &it->second;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 void VRDemoConfigurator::parseSection(const std::string& configFilePath, const std::string& sectionName)
 {
-    std::string sectionKey = l4util::toUpper(sectionName);
-    if (m_sectionMap.count(sectionKey)) {
-        LOG4CPLUS_WARN(m_logger, "Section already defined: " << sectionName);
-    }
-    else {
+    if (!m_sectionMap.count(sectionName)) {
         char buf[1024] = "";
         DWORD p = 0, ret = GetPrivateProfileSectionA(sectionName.c_str(), buf, sizeof(buf), configFilePath.c_str());
         KeyValueMap properties;
@@ -56,17 +68,9 @@ void VRDemoConfigurator::parseSection(const std::string& configFilePath, const s
                 l4util::StringPair keyValue;
                 if (!l4util::trim(line.str()).empty()) {
                     if (l4util::parseProperty(line.str(), keyValue)) {
-                        std::string originalKey = keyValue.first;
-                        l4util::toUpper(keyValue.first);
-                        if (properties.count(keyValue.first)) {
-                            LOG4CPLUS_WARN(m_logger, "Property already defined: " << originalKey << ", section: " << sectionName);
-                        }
-                        else {
+                        if (!properties.count(keyValue.first)) {
                             properties.insert(keyValue);
                         }
-                    }
-                    else {
-                        LOG4CPLUS_WARN(m_logger, "Invalid line: " << line.str());
                     }
                 }
                 line.str("");
@@ -86,7 +90,7 @@ void VRDemoConfigurator::parseSection(const std::string& configFilePath, const s
             p++;
         }
         if (!properties.empty()) {
-            m_sectionMap[sectionKey] = properties;
+            m_sectionMap[sectionName] = properties;
         }
     }
 }

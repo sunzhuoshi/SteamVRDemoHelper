@@ -71,7 +71,7 @@ public:
         toggleValue(VRDemoArbiter::TI_SHOW_FPS);
     }
     VRDemoTogglesWrapper() :
-        m_toggles({ FALSE, TRUE, TRUE, FALSE }) {
+        m_toggles({ FALSE, TRUE, TRUE, TRUE }) {
     }
     const VRDemoArbiter::Toggles& getToggles() {
         return m_toggles;

@@ -10,7 +10,7 @@ public:
     enum ToggleIndex {
         TI_PAUSE = 0,
         TI_MAXIMIZE_GAMES = 1,
-        TI_HIDE_STEAM_VR_NOTIFICATION = 2,
+        TI_IMPROVE_STEAM_VR = 2,
         TI_SHOW_FPS = 3
     };
     static const int TI_MIN = TI_PAUSE;
@@ -19,7 +19,7 @@ public:
         struct {
         BOOL m_pause;
         BOOL m_maximizeGames;
-        BOOL m_hideSteamVrNotifcation;
+        BOOL m_improveSteamVR;
             BOOL m_showFPS;
     };
         BOOL m_values[TI_MAX+1];
@@ -117,14 +117,13 @@ public:
     }
     bool hasRuleWithType(RuleType ruleType) const;
     static const std::string SECTION_PREFIX_MAXIMIZE_GAMES;
-    static const std::string SECTION_PREFIX_HIDE_STEAM_VR_NOTIFICATION;
+    static const std::string SECTION_PREFIX_IMPROVE_STEAM_VR;
     static const std::string SECTION_PREFIX_ALL;
 private:
 	bool ifIgnore(const std::string &processName);
 
     void performAction(HWND wnd, const RuleItem &ruleItems);
 	void performFullScreenAction(HWND wnd, const RuleItem &ruleItem);
-    void performShowWindowAction(HWND wnd, const RuleItem &ruleItem);
 
     int parseValue(const std::string &token, const TokenMap &tokenMap);
 

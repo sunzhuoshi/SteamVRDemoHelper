@@ -25,7 +25,10 @@ public:
     }
     void addNotificationInfo(int infoStringId, unsigned int timeOut);
     void deleteNotifcationInfo();
+    void refreshNotificationArea();
 private:
+    HWND findNotificationBarWindow();
+
     HINSTANCE       m_instance;
     HWND            m_wnd;
     std::unique_ptr<std::thread> m_deleteInfoThread;

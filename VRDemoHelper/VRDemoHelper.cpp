@@ -1,5 +1,4 @@
-﻿// VRDemoHelper.cpp : 定义应用程序的入口点。
-//
+﻿//
 
 // NOTE: DO NOT add anything except comments before "stdafx.h", it will be omitted without any warning...
 #include "stdafx.h"
@@ -25,19 +24,18 @@
 #include "VRDemoCoreWrapper.h"
 #include "VRDemoNotificationManager.h"
 #include "VRDemoHotKeyManager.h"
+#include "VRDemoSteamVRConfigurator.h"
 
 #define MAX_LOADSTRING 100
 #define LOG_PROPERTY_FILE "log4cplus.props"
 #define SINGLE_INSTANCE_MUTEX_NAME "L4VRDemoHelperSingleInstanceMetux"
-
-// 全局变量: 
-HINSTANCE hInst;                                // 当前实例
-CHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
-CHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
+ 
+HINSTANCE hInst;                                
+CHAR szTitle[MAX_LOADSTRING];                
+CHAR szWindowClass[MAX_LOADSTRING];           
 
 VRDemoTogglesWrapper togglesWrapper;
 
-// 此代码模块中包含的函数的前向声明: 
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -68,7 +66,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	LOG4CPLUS_INFO(logger, "VR Demo Helper is starting");
-
+    
     if (!VRDemoConfigurator::getInstance().init(
             l4util::getFileFullPath(VRDemoConfigurator::FILE_SETTINGS)
         )
@@ -77,6 +75,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
+    if (!VRDemoSteamVRConfigurator::getInstance().init()) {
+        togglesWrapper.setConfigurateVRNotification(FALSE);
+        LOG4CPLUS_INFO(logger, "Failed to init SteamVR configurator, check if SteamVR is installed");
+    }
 
     VRDemoCoreWrapper::VRDemoCoreWrapperPtr coreWrapper(new VRDemoCoreWrapper());
     if (!coreWrapper->init()) {
@@ -90,12 +92,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    // 初始化全局字符串
     LoadStringA(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringA(hInstance, IDC_VRDEMOHELPER, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    // 执行应用程序初始化: 
     if (!InitInstance (hInstance, nCmdShow))
     {
         return FALSE;
@@ -107,7 +107,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     LOG4CPLUS_INFO(logger, "VR Demo Helper started");
 
-    // 主消息循环: 
     while (GetMessage(&msg, nullptr, 0, 0))
     {
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
@@ -127,9 +126,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
 //
-//  函数: MyRegisterClass()
-//
-//  目的: 注册窗口类。
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -153,14 +149,6 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 }
 
 //
-//   函数: InitInstance(HINSTANCE, int)
-//
-//   目的: 保存实例句柄并创建主窗口
-//
-//   注释: 
-//
-//        在此函数中，我们在全局变量中保存实例句柄并
-//        创建和显示主程序窗口。
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
@@ -184,14 +172,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-//
-//  函数: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  目的:    处理主窗口的消息。
-//
-//  WM_COMMAND  - 处理应用程序菜单
-//  WM_PAINT    - 绘制主窗口
-//  WM_DESTROY  - 发送退出消息并返回
+
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -228,8 +209,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_MAXIMIZE_GAMES:
                 togglesWrapper.toggleMaximizeGames();
                 break;
-            case IDM_HIDE_STEAM_VR_NOTIFICATION:
-                togglesWrapper.toggleHideSteamVrNotification();
+            case IDM_IMPROVE_STEAM_VR:
+                togglesWrapper.toggleImproveSteamVR();
                 break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
@@ -240,11 +221,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 在此处添加使用 hdc 的任何绘图代码...
             EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:
+        VRDemoSteamVRConfigurator::getInstance().restoreSettings();
         VRDemoNotificationManager::getInstance().deleteNotificationIcon();
         PostQuitMessage(0);
         break;
@@ -316,7 +297,11 @@ VOID ShowContextMenu(HWND hwnd, POINT pt)
 			}
             CheckMenuItem(hSubMenu, IDM_PAUSE, MF_BYCOMMAND | (togglesWrapper.getPause() ? MF_CHECKED : MF_UNCHECKED));
             CheckMenuItem(hSubMenu, IDM_MAXIMIZE_GAMES, MF_BYCOMMAND | (togglesWrapper.getMaximmizeGames() ? MF_CHECKED : MF_UNCHECKED));
-            CheckMenuItem(hSubMenu, IDM_HIDE_STEAM_VR_NOTIFICATION, MF_BYCOMMAND | (togglesWrapper.getHideSteamVrNotification() ? MF_CHECKED : MF_UNCHECKED));
+
+            bool steamVRConfiguratorActive = VRDemoSteamVRConfigurator::getInstance().isActive();
+            CheckMenuItem(hSubMenu, IDM_IMPROVE_STEAM_VR, MF_BYCOMMAND | (togglesWrapper.getImproveSteamVR() ? MF_CHECKED : MF_UNCHECKED));
+            EnableMenuItem(hSubMenu, IDM_IMPROVE_STEAM_VR, MF_BYCOMMAND | (steamVRConfiguratorActive? MF_ENABLED: MF_DISABLED));
+
             TrackPopupMenuEx(hSubMenu, uFlags, pt.x, pt.y, hwnd, NULL);
 		}
 		DestroyMenu(hMenu);

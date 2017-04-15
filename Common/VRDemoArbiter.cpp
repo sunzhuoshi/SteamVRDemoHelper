@@ -8,7 +8,7 @@
 #include "VRDemoConfigurator.h"
 
 const std::string VRDemoArbiter::SECTION_IGNORE_LIST = "A.IgnoreList";
-const std::string VRDemoArbiter::SECTION_PREFIX_HIDE_STEAM_VR_NOTIFICATION = "A.SteamVR";
+const std::string VRDemoArbiter::SECTION_PREFIX_IMPROVE_STEAM_VR = "A.SteamVR";
 const std::string VRDemoArbiter::SECTION_PREFIX_MAXIMIZE_GAMES = "A.Game";
 const std::string VRDemoArbiter::SECTION_PREFIX_ALL = "A.";    // A stands for Arbiter
 
@@ -57,8 +57,8 @@ bool VRDemoArbiter::arbitrate(RuleType type, int message, HWND wnd)
                 if (l4util::keyStartWith(it->first, VRDemoArbiter::SECTION_PREFIX_MAXIMIZE_GAMES)) {
                     okToGo = m_toggles->m_maximizeGames;
                 }
-                else if (l4util::keyStartWith(it->first, VRDemoArbiter::SECTION_PREFIX_HIDE_STEAM_VR_NOTIFICATION)) {
-                    okToGo = m_toggles->m_hideSteamVrNotifcation;
+                else if (l4util::keyStartWith(it->first, VRDemoArbiter::SECTION_PREFIX_IMPROVE_STEAM_VR)) {
+                    okToGo = m_toggles->m_improveSteamVR;
                 }
                 else {
                     okToGo = TRUE;

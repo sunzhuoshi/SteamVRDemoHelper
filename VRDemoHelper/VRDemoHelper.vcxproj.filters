@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="jsoncpp">
+      <UniqueIdentifier>{ad0af116-ae53-422b-9fb1-7b1330f11b4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="jsoncpp\json">
+      <UniqueIdentifier>{6596d3bd-00b2-45ca-a8ea-451e3e0db1b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -63,6 +69,18 @@
     <ClInclude Include="VRDemoTogglesWrapper.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="VRDemoSteamVRConfigurator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\util\l4Singleton.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="jsoncpp\json\json.h">
+      <Filter>jsoncpp\json</Filter>
+    </ClInclude>
+    <ClInclude Include="jsoncpp\json\json-forwards.h">
+      <Filter>jsoncpp\json</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -97,6 +115,12 @@
     </ClCompile>
     <ClCompile Include="VRDemoHotKeyManager.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="VRDemoSteamVRConfigurator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="jsoncpp\jsoncpp.cpp">
+      <Filter>jsoncpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
